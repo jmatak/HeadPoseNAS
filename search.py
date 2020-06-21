@@ -29,7 +29,7 @@ def get_arguments():
 
     parser.add_argument('-alg', "--algorithm", type=str, default="cmaes")
 
-    parser.add_argument('-ma', "--machine", type=str, default="ludmila")
+    parser.add_argument('-ma', "--machine", type=str, default="local")
     parser.add_argument('-d', "--train_set", type=str, default="300w_train")
     parser.add_argument('-v', "--val_set", type=str, default="300w_val")
     parser.add_argument('-m', "--model", type=str, default="inception")

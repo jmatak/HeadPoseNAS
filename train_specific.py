@@ -86,10 +86,10 @@ def test(args, blocks, kernels, flops):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pose extractor trainer.')
 
-    parser.add_argument('-ma', "--machine", type=str, default="ludmila")
-    parser.add_argument('-d', "--train_set", type=str, default="300w_train_full")
+    parser.add_argument('-ma', "--machine", type=str, default="local")
+    parser.add_argument('-d', "--train_set", type=str, default="300w_train")
     parser.add_argument('-v', "--val_set", type=str, default="300w_val")
-    parser.add_argument('-te', "--test_set", type=str, default="afbi")
+    parser.add_argument('-te', "--test_set", type=str, default="biwi")
     parser.add_argument('-t', "--test_sets", nargs='+', default=["aflw", "biwi"])
     parser.add_argument('-m', "--model", type=str, default="inception")
 
