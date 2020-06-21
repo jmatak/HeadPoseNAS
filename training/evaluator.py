@@ -12,7 +12,7 @@ np.random.seed(1950)
 
 def check_result(name):
     info = json.load(open(f"{MODEL_SAVER_PATH}/{name}/{name}.txt", "r"))
-    return float(info["FLOPS"])
+    return float(info["FIT"])
 
 
 def evaluate(args, state, ind):
@@ -48,7 +48,7 @@ def evaluate(args, state, ind):
         json.dumps({
             "NAME": name,
             "VAL_LOSS": trainer.validation_loss,
-            "FLOPS": trainer.validation_loss,
+            "FLOPS": trainer.flops,
             "FIT": trainer.fitness
         }, indent=3)
     )

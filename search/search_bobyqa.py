@@ -31,6 +31,7 @@ def search_bobyqa(arguments, state, log_dir):
         soln = pybobyqa.solve(evaluator_wrapper, x0,
                               args=(arguments, state,),
                               maxfun=arguments.max_iter,
+                              rhobeg=0.3,
                               bounds=(lower, upper),
                               seek_global_minimum=True)
         print(soln)

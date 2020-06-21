@@ -54,12 +54,12 @@ class PoseTrainer:
         print("Successfully restored.")
 
     def save_model(self):
-        print("Restoring model...")
+        print("Saving model...")
         saver = tf.train.Saver(tf.global_variables())
         saver.save(self.session, f"{MODEL_SAVER_PATH}/{self.name}/{self.name}.ckpt")
         print("Successfully saved.")
 
-    def test_forward(self, dataset, training_node=True):
+    def test_forward(self, dataset):
         dataset.initialize(self.session)
         batches_per_epoch = dataset.batches_per_epoch()
         progress_bar = tqdm(total=batches_per_epoch)
@@ -69,17 +69,10 @@ class PoseTrainer:
             image, angle = dataset.get_batch(self.session)
             if image is None: break
 
-            if training_node:
-                res = self.session.run(self.mae, feed_dict={
-                    self.input: image,
-                    self.angle: angle,
-                    self.is_training: False
-                })
-            else:
-                res = self.session.run(self.mae, feed_dict={
-                    self.input: image,
-                    self.angle: angle
-                })
+            res = self.session.run(self.mae, feed_dict={
+                self.input: image,
+                self.angle: angle
+            })
             mae.append(res)
             progress_bar.update(1)
 
@@ -183,7 +176,7 @@ class PoseTrainer:
         progress_bar.close()
         return epoch_loss, num_batches
 
-    def freeze_model(self):
+    def freeze_model(self, training_node=True):
         from tensorflow.python.framework import graph_util
         proto_path = f"{MODEL_SAVER_PATH}/{self.name}/"
         proto_name = f"{self.name}.pb"
@@ -202,9 +195,9 @@ class PoseTrainer:
 
         converted_graph_def = graph_util.convert_variables_to_constants(self.session, gd, ["pose_output"])
         tf.train.write_graph(converted_graph_def, proto_path, proto_name, as_text=False)
-        if not self.flops: self.set_flops()
+        if not self.flops: self.set_flops(training_node)
 
-    def set_flops(self):
+    def set_flops(self, training_node=True):
         model_path = f"{MODEL_SAVER_PATH}/{self.name}/{self.name}.pb"
 
         def load_pb(pb):
@@ -219,9 +212,10 @@ class PoseTrainer:
                                                   dtype=tf.float32,
                                                   name="pose_input")
 
-                input_map["is_training"] = tf.constant(False,
-                                                       dtype=tf.bool,
-                                                       name="is_training")
+                if training_node:
+                    input_map["is_training"] = tf.constant(False,
+                                                           dtype=tf.bool,
+                                                           name="is_training")
 
                 tf.import_graph_def(graph_def, name='', input_map=input_map)
                 return graph

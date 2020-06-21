@@ -33,15 +33,19 @@ def train(args, blocks, kernels, flops):
     trainer = PoseTrainer(inpt, output, training, session, name=args.name)
     session.run(tf.global_variables_initializer())
 
+    learning_rate = [args.learning_rate]
+    for _ in range(args.epochs): learning_rate.append(learning_rate[-1] * args.decay)
+    # learning_rate = args.learning_rate
+
     val_loss = trainer.train(dataset_train, dataset_val, dataset_test,
                              epochs=args.epochs,
-                             learning_rate=args.learning_rate)
+                             learning_rate=learning_rate)
 
     open(f"{MODEL_SAVER_PATH}/{args.name}/{args.name}.txt", "w+").write(
         json.dumps({
             "NAME": args.name,
             "VAL_LOSS": trainer.validation_loss,
-            "FLOPS": trainer.validation_loss,
+            "FLOPS": trainer.flops,
             "FIT": trainer.fitness
         }, indent=3)
     )
@@ -60,18 +64,21 @@ def test(args, blocks, kernels, flops):
         session = tf.Session()
     layer = get_placeholder(args.model, args.layer)
 
-    inpt, output, training = master_module(layer["shape"], blocks, kernels, flops)
+    inpt, output, training = master_module(layer["shape"], blocks, kernels, flops, inference=True)
 
     model_dir = f"{MODEL_SAVER_PATH}/{args.name}/{args.name}.ckpt"
     trainer = PoseTrainer(inpt, output, training, session, name=args.name, export_dir=model_dir)
+    trainer.freeze_model(training_node=False)
 
     for test_set in args.test_sets:
-        print(test_set)
         dataset_test = get_test_dataset(args.machine, args.model,
                                         test_set, layer["name"],
                                         args.batch_size, session)
         res = trainer.test_forward(dataset_test)
+        print(np.mean(res))
+        print(test_set)
         print(res)
+
     session.close()
     tf.reset_default_graph()
 
@@ -80,15 +87,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pose extractor trainer.')
 
     parser.add_argument('-ma', "--machine", type=str, default="ludmila")
-    parser.add_argument('-d', "--train_set", type=str, default="300w_train")
+    parser.add_argument('-d', "--train_set", type=str, default="300w_train_full")
     parser.add_argument('-v', "--val_set", type=str, default="300w_val")
     parser.add_argument('-te', "--test_set", type=str, default="afbi")
     parser.add_argument('-t', "--test_sets", nargs='+', default=["aflw", "biwi"])
     parser.add_argument('-m', "--model", type=str, default="inception")
 
     parser.add_argument('-la', "--layer", type=int, default=13)
-    parser.add_argument('-lr', "--learning_rate", nargs='+',
-                        default=[0.0005, 0.0001, 0.00005, 0.00004, 0.00002, 0.00009])
+    # parser.add_argument('-lr', "--learning_rate", nargs='+', default=[0.0005, 0.0002, 0.00009, 0.00004, 0.00001, 0.00001])
+    parser.add_argument('-lr', "--learning_rate", type=float, default=0.0005)
+    parser.add_argument('-de', "--decay", type=float, default=0.8)
+
     parser.add_argument('-b', "--batch_size", type=int, default=32)
     parser.add_argument('-e', "--epochs", type=int, default=6)
     parser.add_argument('-g', "--gpu", type=bool, default=True)
@@ -101,7 +110,7 @@ if __name__ == '__main__':
 
     if args.individual:
         state = NeuralSearchState()
-        args.name = f"{test}_{args.individual}"
+        args.name = f"test_{args.individual}"
         model = state.decode_int(parse_model(args.name))
     else:
         model = [ConvBlock,

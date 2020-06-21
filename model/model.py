@@ -5,7 +5,7 @@ tf.random.set_random_seed(1950)
 
 
 weight_init = tf.contrib.layers.xavier_initializer()
-weight_regularizer = tf.contrib.layers.l2_regularizer(0.001)
+weight_regularizer = tf.contrib.layers.l2_regularizer(0.0001)
 
 
 def master_module(layer_shape, blocks, kernels, flops_multiplier=None, depth=None, width=None, inference=False):
@@ -23,8 +23,12 @@ def master_module(layer_shape, blocks, kernels, flops_multiplier=None, depth=Non
 
     pose_input = tf.placeholder(dtype=tf.float32, shape=layer_shape, name="pose_input")
     x = pose_input
+    
+    # x = parametric_relu(x, "Alpha0")
     x = conv2d(x, channels=8, kernel=1, stride=1, scope='ReduceConv')
     x = conv2d(x, channels=ch, kernel=1, stride=1, scope='ReduceConv2')
+    # x = parametric_relu(x, "Alpha1")
+    # x = batch_norm(x, training, "BN1")
 
     for i in range(d):
         x = blocks[0](x, channels=ch, kernel=kernels[0], train=training, scope=f'Block_0_{i}')
@@ -44,7 +48,7 @@ def master_module(layer_shape, blocks, kernels, flops_multiplier=None, depth=Non
         x = blocks[5](x, channels=ch * 24, kernel=kernels[5], train=training, scope=f'Block_3_{i}')
     x = max_pooling(x)
 
-    x = fully_connected(x, units=256, scope='Hidden')  # 32
+    x = fully_connected(x, units=128, scope='Hidden')  # 32
     y = fully_connected(x, units=1, scope='PoseOutput_y')
     p = fully_connected(x, units=1, scope='PoseOutput_p')
     r = fully_connected(x, units=1, scope='PoseOutput_r')
@@ -155,8 +159,8 @@ def conv2d(x, channels, kernel=4, stride=2, padding='SAME', use_bias=False, scop
     with tf.variable_scope(scope):
         x = tf.layers.conv2d(inputs=x, filters=channels,
                              kernel_size=kernel,
-                             # kernel_initializer=weight_init,
-                             # kernel_regularizer=weight_regularizer,
+                             kernel_initializer=weight_init,
+                             kernel_regularizer=weight_regularizer,
                              strides=stride, use_bias=use_bias, padding=padding)
 
         return x

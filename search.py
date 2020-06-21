@@ -36,9 +36,9 @@ def get_arguments():
 
     parser.add_argument('-la', "--layer", type=int, default=13)
     parser.add_argument('-lr', "--learning_rate", nargs='+',
-                        default=[0.0005, 0.0002, 0.00009, 0.00004, 0.00001, 0.00001])
+                        default=[0.0005, 0.0002, 0.00009, 0.00004, 0.00001])
     parser.add_argument('-b', "--batch_size", type=int, default=32)
-    parser.add_argument('-e', "--epochs", type=int, default=6)
+    parser.add_argument('-e', "--epochs", type=int, default=5)
     parser.add_argument('-g', "--gpu", type=bool, default=True)
 
     parser.add_argument('-c', "--continue_iter", type=bool, default=False)
