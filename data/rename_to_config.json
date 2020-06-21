@@ -1,24 +1,24 @@
 {
   "local": {
     "300w_train_inception": {
-      "csv": "./datasets/pose_300w_train.csv",
-      "data": "./datasets/300W_LP"
+      "csv": ".../dataset/pose_300w_train.csv",
+      "data": ".../dataset/300W_LP"
     },
     "300w_train_full_inception": {
-      "csv": "./datasets/pose_300w.csv",
-      "data": "./datasets/300W_LP"
+      "csv": ".../dataset/pose_300w.csv",
+      "data": ".../dataset/300W_LP"
     },
     "300w_val_inception": {
-      "csv": "./datasets/pose_300w_val.csv",
-      "data": "./datasets/300W_LP"
+      "csv": ".../dataset/pose_300w_val.csv",
+      "data": ".../dataset/300W_LP"
     },
     "biwi_inception": {
-      "csv": "./datasets/pose_hpdb.csv",
-      "data": "./datasets/HPDB"
+      "csv": ".../dataset/pose_hpdb.csv",
+      "data": ".../dataset/HPDB"
     },
     "aflw_inception": {
-      "csv": "./datasets/pose_aflw.csv",
-      "data": "./datasets/AFLW2000"
-    },
+      "csv": ".../dataset/pose_aflw.csv",
+      "data": ".../dataset/AFLW2000"
+    }
   }
 }
